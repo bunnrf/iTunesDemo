@@ -1,8 +1,8 @@
 module.exports = {
   context: __dirname,
-  entry: "frontend/music_demo",
+  entry: "./frontend/music_demo.jsx",
   output: {
-    path: './',
+    path: './assets/',
     filename: "bundle.js"
   },
   module: {
@@ -12,17 +12,17 @@ module.exports = {
         exclude: /(node_modules)/,
         loader: 'babel',
         query: {
-          presets: ['es2015', 'react']
+          presets: ['react', 'es2015']
         }
       }
     ]
   },
-  externals: {
-    "react": "React",
-    "react-dom": "ReactDOM"
-  },
   devtool: 'source-maps',
   resolve: {
     extensions: ["", ".js", ".jsx" ]
+  },
+  devServer: {
+    historyApiFallback: true,
+    contentBase: './'
   }
 };
