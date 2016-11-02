@@ -1,20 +1,18 @@
-const React = require('react');
-const ReactDOM = require('react-dom');
-const ReactRouter = require('react-router');
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactRouter from 'react-router';
 const Router = ReactRouter.Router;
 const Route = ReactRouter.Route;
 const IndexRoute = ReactRouter.IndexRoute;
 const hashHistory = ReactRouter.hashHistory;
 
-const App = require('./components/app');
-const TrackIndex = require('./components/track_index');
-
-console.log("geagefaef");
+import App from './components/app';
+import TrackIndex from './components/track_index';
 
 const appRouter = (
-  <Router history={ hashHistory }>
-    <Route path="/" component={ App }>
-      <Route path="/tracks/" component={ TrackIndex } />
+  <Router history={hashHistory}>
+    <Route path="/" component={App}>
+      <IndexRoute component={TrackIndex} />
     </Route>
   </Router>
 );

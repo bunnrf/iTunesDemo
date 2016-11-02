@@ -1,4 +1,4 @@
-const React = require('react');
+import React from 'react';
 
 class app extends React.Component {
   constructor(props) {
@@ -9,10 +9,9 @@ class app extends React.Component {
   render() {
     return(
       <div>
-        <h1>Hellloaefa</h1>
-        {this.props.chlidren}
+        {this.props.children}
       </div>
-    )
+    );
   }
 }
 
