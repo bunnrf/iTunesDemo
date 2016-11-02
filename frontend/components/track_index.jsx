@@ -1,14 +1,29 @@
 import React from 'react';
-// const React = require('react');
-// const TrackIndexItem = require('track_index_item');
+import TrackStore from '../stores/track_store';
+import TrackActions from '../actions/track_actions';
+import TrackIndexItem from './track_index_item';
 
 class TrackIndex extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {toggle:false};
+    this.state = {tracks: {}};
+  }
+
+  componentDidMount() {
+    this.tracksListener = TrackStore.addListener(this._onTracksChange);
+    TrackActions.fetchTop40();
+  }
+
+  componentWillUnmount() {
+    this.tracksListener.remove();
+  }
+
+  _onTracksChange() {
+    this.setState({tracks: TrackStore.all()})
   }
 
   render() {
+    console.log(this.state.tracks);
     return (
       <div>
         <h1>hi</h1>
