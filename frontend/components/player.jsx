@@ -27,9 +27,12 @@ class Player extends React.Component {
     const track = this.state.track;
     return (
       <div className="player">
-        <div className="track-details">
-
-        </div>
+        {track ? <div className="track-details">
+          <img alt src={track ? track["im:image"][2].label : ""}></img>
+          <div className="artist-details">
+            <span>{track.title.label}</span>
+          </div>
+        </div> : null}
         <div className="audio-container">
           <video id="audio-controller" controls autoPlay>
             <source src={track ? track.link[1].attributes.href : ""}

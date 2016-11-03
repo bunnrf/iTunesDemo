@@ -13,7 +13,7 @@ TrackStore.changeTrack = function(track) {
 }
 
 function resetAllTracks(tracks) {
-  _tracks = JSON.parse(tracks).feed.entry;
+  _tracks = tracks;
 }
 
 TrackStore.__onDispatch = function(payload) {
