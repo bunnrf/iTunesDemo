@@ -1,9 +1,9 @@
 import dispatcher from '../dispatcher';
-import TrackApiUtil from '../util/track_api_util';
+import ITunesApiUtil from '../util/itunes_api_util';
 
 const TrackActions = {
   fetchTop40: function() {
-    TrackApiUtil.fetchTopTracks(40, this.receiveTracks);
+    ITunesApiUtil.fetchTopTracks(40, this.receiveTracks);
   },
 
   receiveTracks: function(tracks) {

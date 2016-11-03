@@ -26371,6 +26371,14 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
+	var _search_bar = __webpack_require__(252);
+	
+	var _search_bar2 = _interopRequireDefault(_search_bar);
+	
+	var _player = __webpack_require__(251);
+	
+	var _player2 = _interopRequireDefault(_player);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -26385,10 +26393,7 @@
 	  function app(props) {
 	    _classCallCheck(this, app);
 	
-	    var _this = _possibleConstructorReturn(this, (app.__proto__ || Object.getPrototypeOf(app)).call(this, props));
-	
-	    _this.state = {};
-	    return _this;
+	    return _possibleConstructorReturn(this, (app.__proto__ || Object.getPrototypeOf(app)).call(this, props));
 	  }
 	
 	  _createClass(app, [{
@@ -26397,7 +26402,9 @@
 	      return _react2.default.createElement(
 	        'div',
 	        null,
-	        this.props.children
+	        _react2.default.createElement(_search_bar2.default, null),
+	        this.props.children,
+	        _react2.default.createElement(_player2.default, null)
 	      );
 	    }
 	  }]);
@@ -26447,15 +26454,16 @@
 	
 	    var _this = _possibleConstructorReturn(this, (TrackIndex.__proto__ || Object.getPrototypeOf(TrackIndex)).call(this, props));
 	
-	    _this.state = { tracks: {} };
+	    _this._tracksChanged = _this._tracksChanged.bind(_this);
+	    _this.state = { tracks: [] };
 	    return _this;
 	  }
 	
 	  _createClass(TrackIndex, [{
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
-	      this.tracksListener = _track_store2.default.addListener(this._onTracksChange);
 	      _track_actions2.default.fetchTop40();
+	      this.tracksListener = _track_store2.default.addListener(this._tracksChanged);
 	    }
 	  }, {
 	    key: 'componentWillUnmount',
@@ -26463,22 +26471,26 @@
 	      this.tracksListener.remove();
 	    }
 	  }, {
-	    key: '_onTracksChange',
-	    value: function _onTracksChange() {
+	    key: '_tracksChanged',
+	    value: function _tracksChanged() {
 	      this.setState({ tracks: _track_store2.default.all() });
+	    }
+	  }, {
+	    key: 'buildTracks',
+	    value: function buildTracks(tracks) {
+	      var key = 0;
+	      return tracks.map(function (track) {
+	        return _react2.default.createElement(_track_index_item2.default, { key: key++, track: track });
+	      });
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      console.log(this.state.tracks);
+	      var trackIndexItems = this.buildTracks(this.state.tracks);
 	      return _react2.default.createElement(
 	        'div',
-	        null,
-	        _react2.default.createElement(
-	          'h1',
-	          null,
-	          'hi'
-	        )
+	        { className: 'track-index' },
+	        trackIndexItems
 	      );
 	    }
 	  }]);
@@ -26500,6 +26512,12 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
+	var _reactRouter = __webpack_require__(172);
+	
+	var _player_actions = __webpack_require__(250);
+	
+	var _player_actions2 = _interopRequireDefault(_player_actions);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -26516,14 +26534,25 @@
 	
 	    var _this = _possibleConstructorReturn(this, (TrackIndexItem.__proto__ || Object.getPrototypeOf(TrackIndexItem)).call(this, props));
 	
+	    _this._handleClick = _this._handleClick.bind(_this);
 	    _this.state = {};
 	    return _this;
 	  }
 	
 	  _createClass(TrackIndexItem, [{
+	    key: '_handleClick',
+	    value: function _handleClick() {
+	      _player_actions2.default.playTrack(this.props.track);
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
-	      return _react2.default.createElement('div', null);
+	      var track = this.props.track;
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'track-index-item', onClick: this._handleClick },
+	        _react2.default.createElement('img', { alt: true, src: track["im:image"][2].label })
+	      );
 	    }
 	  }]);
 	
@@ -26546,22 +26575,30 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var _tracks = {};
+	var _tracks = [];
 	
 	var TrackStore = new _utils.Store(_dispatcher2.default);
 	
 	TrackStore.all = function () {
 	  return _tracks;
 	};
+	TrackStore.currentTrack = function () {
+	  return _currentTrack;
+	};
+	
+	TrackStore.changeTrack = function (track) {
+	  _currentTrack = track;
+	};
 	
 	function resetAllTracks(tracks) {
-	  _tracks = tracks;
+	  _tracks = JSON.parse(tracks).feed.entry;
 	}
 	
 	TrackStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
 	    case "RECEIVE_TRACKS":
 	      resetAllTracks(payload.tracks);
+	      this.__emitChange();
 	      break;
 	  }
 	};
@@ -26578,15 +26615,15 @@
 	
 	var _dispatcher2 = _interopRequireDefault(_dispatcher);
 	
-	var _track_api_util = __webpack_require__(232);
+	var _itunes_api_util = __webpack_require__(249);
 	
-	var _track_api_util2 = _interopRequireDefault(_track_api_util);
+	var _itunes_api_util2 = _interopRequireDefault(_itunes_api_util);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var TrackActions = {
 	  fetchTop40: function fetchTop40() {
-	    _track_api_util2.default.fetchTopTracks(40, this.receiveTracks);
+	    _itunes_api_util2.default.fetchTopTracks(40, this.receiveTracks);
 	  },
 	
 	  receiveTracks: function receiveTracks(tracks) {
@@ -26600,24 +26637,7 @@
 	module.exports = TrackActions;
 
 /***/ },
-/* 232 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	module.exports = {
-	  fetchTopTracks: function fetchTopTracks(count, callback) {
-	    $.ajax({
-	      url: "api/tracks/top",
-	      data: { count: count },
-	      success: function success(tracks) {
-	        callback(tracks);
-	      }
-	    });
-	  }
-	};
-
-/***/ },
+/* 232 */,
 /* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -28187,6 +28207,207 @@
 	
 	module.exports = Dispatcher;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+
+/***/ },
+/* 249 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	module.exports = {
+	  fetchTopTracks: function fetchTopTracks(count, callback) {
+	    $.ajax({
+	      url: "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topsongs/limit=" + count + "/json",
+	      data: { count: count },
+	      success: function success(tracks) {
+	        callback(tracks);
+	      }
+	    });
+	  }
+	};
+
+/***/ },
+/* 250 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var _dispatcher = __webpack_require__(246);
+	
+	var _dispatcher2 = _interopRequireDefault(_dispatcher);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var PlayerActions = {
+	  playTrack: function playTrack(track) {
+	    _dispatcher2.default.dispatch({
+	      actionType: "PLAY_TRACK",
+	      track: track
+	    });
+	  }
+	};
+	
+	module.exports = PlayerActions;
+
+/***/ },
+/* 251 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _player_store = __webpack_require__(253);
+	
+	var _player_store2 = _interopRequireDefault(_player_store);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Player = function (_React$Component) {
+	  _inherits(Player, _React$Component);
+	
+	  function Player(props) {
+	    _classCallCheck(this, Player);
+	
+	    var _this = _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, props));
+	
+	    _this._trackChanged = _this._trackChanged.bind(_this);
+	    _this.state = { track: null };
+	    return _this;
+	  }
+	
+	  _createClass(Player, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.playerListener = _player_store2.default.addListener(this._trackChanged);
+	    }
+	  }, {
+	    key: '_trackChanged',
+	    value: function _trackChanged() {
+	      this.setState({ track: _player_store2.default.currentTrack() });
+	      this._play();
+	    }
+	  }, {
+	    key: '_play',
+	    value: function _play() {
+	      var video = document.getElementById("audio-controller");
+	      video.load();
+	      video.play();
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var track = this.state.track;
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'player' },
+	        _react2.default.createElement('div', { className: 'track-details' }),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'audio-container' },
+	          _react2.default.createElement(
+	            'video',
+	            { id: 'audio-controller', controls: true, autoPlay: true },
+	            _react2.default.createElement('source', { src: track ? track.link[1].attributes.href : "",
+	              type: 'audio/x-m4a' })
+	          )
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return Player;
+	}(_react2.default.Component);
+	
+	module.exports = Player;
+
+/***/ },
+/* 252 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var SearchBar = function (_React$Component) {
+	  _inherits(SearchBar, _React$Component);
+	
+	  function SearchBar(props) {
+	    _classCallCheck(this, SearchBar);
+	
+	    return _possibleConstructorReturn(this, (SearchBar.__proto__ || Object.getPrototypeOf(SearchBar)).call(this, props));
+	  }
+	
+	  _createClass(SearchBar, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement('div', null);
+	    }
+	  }]);
+	
+	  return SearchBar;
+	}(_react2.default.Component);
+	
+	module.exports = SearchBar;
+
+/***/ },
+/* 253 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _utils = __webpack_require__(233);
+	
+	var _dispatcher = __webpack_require__(246);
+	
+	var _dispatcher2 = _interopRequireDefault(_dispatcher);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var _currentTrack = null;
+	
+	var PlayerStore = new _utils.Store(_dispatcher2.default);
+	
+	PlayerStore.currentTrack = function () {
+	  return _currentTrack;
+	};
+	
+	function resetCurrentTrack(track) {
+	  _currentTrack = track;
+	}
+	
+	PlayerStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case 'PLAY_TRACK':
+	      resetCurrentTrack(payload.track);
+	      this.__emitChange();
+	      break;
+	  }
+	};
+	
+	module.exports = PlayerStore;
 
 /***/ }
 /******/ ]);

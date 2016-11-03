@@ -6,27 +6,35 @@ import TrackIndexItem from './track_index_item';
 class TrackIndex extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {tracks: {}};
+    this._tracksChanged = this._tracksChanged.bind(this);
+    this.state = {tracks: []};
   }
 
   componentDidMount() {
-    this.tracksListener = TrackStore.addListener(this._onTracksChange);
     TrackActions.fetchTop40();
+    this.tracksListener = TrackStore.addListener(this._tracksChanged);
   }
 
   componentWillUnmount() {
     this.tracksListener.remove();
   }
 
-  _onTracksChange() {
-    this.setState({tracks: TrackStore.all()})
+  _tracksChanged() {
+    this.setState({tracks: TrackStore.all()});
+  }
+
+  buildTracks(tracks) {
+    let key = 0;
+    return tracks.map(track => {
+      return <TrackIndexItem key={key++} track={track} />
+    });
   }
 
   render() {
-    console.log(this.state.tracks);
+    let trackIndexItems = this.buildTracks(this.state.tracks);
     return (
-      <div>
-        <h1>hi</h1>
+      <div className="track-index">
+        {trackIndexItems}
       </div>
     );
   }
